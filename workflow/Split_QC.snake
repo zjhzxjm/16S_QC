@@ -11,9 +11,8 @@ snakemake -c "qsub {params.cluster}" --jn {params.job_name}{jobid} -j 50 -s Spli
 """
 import os
 
-SPLIT_FILES_NUM = 30
+SPLIT_FILES_NUM = 50
 LIB_TYPE = "hiseq"
-DATA_TYPE = "16S"
 """
 sam_barcode.all file format:
 contract sample barcode

@@ -81,8 +81,8 @@ class Sample:
         l_check_barcode_type = []
         with open(sam_barcode) as f:
             for line in f:
-                (project, sample, barcode) = line.strip().split()[:3]
-                code = subprocess.call(['mkdir', '-p', work_dir + "/" + project + "/" + sample])
+                (project, sample, barcode, data_type) = line.strip().split()[:4]
+                code = subprocess.call(['mkdir', '-p', work_dir + "/" + project + "/" + sample + "_" + data_type])
                 if code:
                     logging.error("Can't make filefoder: %s/%s/%s" % (work_dir, project, sample))
                 d_dir[barcode] = work_dir + "/" + project + "/" + sample
@@ -126,7 +126,7 @@ if __name__ == '__main__':
     logging.info("Start running")
 
     class_sample = Sample(args.sample_config, work_path)
-    out_barcode = setting.SeqIndex.out_barcode['hiseq']
+    out_barcode = setting.SeqIndex.out_barcode['realgene']
 
     if re.findall(r'gz', fq1):
         F_fq1 = gzip.open(fq1)

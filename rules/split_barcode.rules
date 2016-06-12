@@ -15,7 +15,7 @@ with open(SAM_BARCODE_INFO) as in_handle:
     for line in in_handle:
         CONTRACTS.append(line.split()[0])
         SAMPLES.append(line.split()[1])
-        DIRS.append(line.split()[0] + "/" + line.split()[1])
+        DIRS.append(line.split()[0] + "/" + line.split()[1] + "_" + line.split()[3])
 CONTRACTS = list(set(CONTRACTS))
 
 def iter_all_strings():

@@ -41,7 +41,7 @@ if __name__ == '__main__':
     else:
         qmin = 30
 
-    sample_name = " " + out.split("/")[-2]
+    sample_name = " " + out.split("/")[-2].split("_")[0]
     fq_iter = SeqIO.parse(open(fq), "fastq")
     O_fq = open(out, "w")
     while True:
