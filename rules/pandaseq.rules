@@ -17,7 +17,7 @@ rule run_pandaseq:
     log:
         "QC/{dir}/pandaseq.log"
     run:
-        data_type = wildcards.dir.split("/")[-2].split("_")[1]
+        data_type = wildcards.dir.split("/")[-1].split("_")[1]
         if os.stat(input[0]).st_size and os.stat(input[1]).st_size:
             cmd = " ".join(
             ["-T {threads}",
