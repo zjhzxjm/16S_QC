@@ -5,6 +5,8 @@ The raw data filename must be "{LIBRARY}.R1.fastq.gz and {LIBRARY}.R2.fastq.gz"
 LIBRARY = "H16A28P250-1"
 """
 run the shell:
+export PATH=/home/xujm/soft/Anaconda/anaconda3/bin:$PATH
+source activate snakemake
 snakemake -c "qsub {params.cluster}" --jn {params.job_name}{jobid} -j 50 -s Split_QC.snake -T
 """
 import os
@@ -12,6 +14,10 @@ import os
 SPLIT_FILES_NUM = 30
 LIB_TYPE = "hiseq"
 DATA_TYPE = "16S"
+"""
+sam_barcode.all file format:
+contract sample barcode
+"""
 SAM_BARCODE_INFO = "sam_barcode.all"
 QUA_MIN = 20
 
@@ -20,7 +26,7 @@ if os.path.exists("logs") != True:
 
 localrules: all, report
 
-include_prefix = "/home/xujm/bin/.self/Fastq_manipulate"
+include_prefix = "/data_center_01/home/xujm/Pipeline/16S_QC/"
 include:
     include_prefix + "/workflow/config.py"
 include:

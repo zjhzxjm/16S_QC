@@ -26,7 +26,7 @@ parser.add_argument('-v', '--verbose', action='store_true', dest='verbose', help
 
 
 class RawFastqPairInfo:
-    def __init__(self, ob_read1, ob_read2, outbarcode, barcode_type='hiseq'):
+    def __init__(self, ob_read1, ob_read2, outbarcode, barcode_type='realgene'):
         self.ob_read1 = ob_read1
         self.ob_read2 = ob_read2
         self.out_barcode = outbarcode

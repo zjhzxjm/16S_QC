@@ -56,7 +56,7 @@ rule split_barcode:
     output:
         touch("split/Split/split_barcode.{suffix}.done")
     shell:
-        BIN + "python ~/bin/.self/Fastq_manipulate/split_barcode.py"
+        ENV_BIN + "python " + SCRIPTS_BIN + "split_barcode.py"
         " -a {params.read1}"
         " -b {params.read2}"
         " -s {input[2]}"

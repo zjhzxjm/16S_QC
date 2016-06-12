@@ -1,8 +1,8 @@
 import subprocess
-import setting
+from scripts.setting import SeqIndex
 import os
-F_PRIMER = setting.SeqIndex.primer[LIB_TYPE][DATA_TYPE]['forward']
-R_PRIMER = setting.SeqIndex.primer[LIB_TYPE][DATA_TYPE]['reverse']
+F_PRIMER = SeqIndex.primer[LIB_TYPE][DATA_TYPE]['forward']
+R_PRIMER = SeqIndex.primer[LIB_TYPE][DATA_TYPE]['reverse']
 
 
 rule run_pandaseq:
