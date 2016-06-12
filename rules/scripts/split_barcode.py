@@ -65,9 +65,20 @@ class RawFastqPairInfo:
             return False
 
 
+class RawFastqSingleInfo:
+    def __init__(self, ob_read1):
+        self.ob_read1 = ob_read1
+
+    def get_barcode(self):
+        fq1_seq = str(self.ob_read1.seq)
+        fq1_bar = fq1_seq[:6]
+        return fq1_bar
+
+
 class Sample:
     def __init__(self, sam_barcode, work_dir='.'):
         d_dir = {}
+        l_check_barcode_type = []
         with open(sam_barcode) as f:
             for line in f:
                 (project, sample, barcode) = line.strip().split()[:3]
@@ -75,9 +86,17 @@ class Sample:
                 if code:
                     logging.error("Can't make filefoder: %s/%s/%s" % (work_dir, project, sample))
                 d_dir[barcode] = work_dir + "/" + project + "/" + sample
+                l_check_barcode_type.append(len(barcode.split("+")))
+        if len(list(set(l_check_barcode_type))) == 1 and list(set(l_check_barcode_type))[0] == 2:
+            barcode_type = "pair"
+        elif len(list(set(l_check_barcode_type))) == 1 and list(set(l_check_barcode_type))[0] == 1:
+            barcode_type = "single"
+        else:
+            print("ERROR:illegal barcode in sam_barcode.all")
         logging.debug(d_dir)
         subprocess.call(['mkdir', '-p', work_dir + '/Unalign'])
         self.d_dir = d_dir
+        self.barcode_type = barcode_type
 
 
 if __name__ == '__main__':
@@ -88,9 +107,9 @@ if __name__ == '__main__':
     fq1_name = fq1.split('/')[-1]
     fq2_name = fq2.split('/')[-1]
 
-    try:
+    if args.work_dir:
         work_path = os.path.abspath(args.work_dir)
-    except NameError:
+    else:
         work_path = os.path.abspath(".")
     if args.verbose:
         logging.basicConfig(
@@ -134,16 +153,16 @@ if __name__ == '__main__':
         try:
             record_fq1 = next(fq1_iter)
             record_fq2 = next(fq2_iter)
-            class_fastq_pair = RawFastqPairInfo(record_fq1, record_fq2, out_barcode)
+            if class_sample.barcode_type == "pair":
+                class_fastq_pair = RawFastqPairInfo(record_fq1, record_fq2, out_barcode)
 
-            d_count['total'] += 1
-            if class_fastq_pair.is_need_out_barcode():
-                # Fetch our out barcode
-                d_count['out_total'] += 1
-                barcode_pair = class_fastq_pair.get_barcode_pair()
-                if barcode_pair:
-                    try:
-                        if class_sample.d_dir[barcode_pair]:
+                d_count['total'] += 1
+                if class_fastq_pair.is_need_out_barcode():
+                    # Fetch our out barcode
+                    d_count['out_total'] += 1
+                    barcode_pair = class_fastq_pair.get_barcode_pair()
+                    if barcode_pair:
+                        try:
                             logging.debug("Our seq %s" % class_sample.d_dir[barcode_pair])
                             O_fq1[barcode_pair].write(record_fq1.format("fastq"))
                             O_fq2[barcode_pair].write(record_fq2.format("fastq"))
@@ -152,15 +171,28 @@ if __name__ == '__main__':
                                 d_count[class_sample.d_dir[barcode_pair]] += 1
                             except KeyError:
                                 d_count[class_sample.d_dir[barcode_pair]] = 1
-                    except KeyError:
-                        try:
-                            d_count[barcode_pair] += 1
                         except KeyError:
-                            d_count[barcode_pair] = 1
-                else:
+                            O_unalign_fq1.write(record_fq1.format("fastq"))
+                            O_unalign_fq2.write(record_fq2.format("fastq"))
+                            try:
+                                d_count[barcode_pair] += 1
+                            except KeyError:
+                                d_count[barcode_pair] = 1
+                    else:
+                        O_unalign_fq1.write(record_fq1.format("fastq"))
+                        O_unalign_fq2.write(record_fq2.format("fastq"))
+            elif class_sample.barcode_type == "single":
+                class_fastq_single = RawFastqSingleInfo(record_fq1)
+                barcode_single = class_fastq_single.get_barcode()
+                try:
+                    O_fq1[barcode_single].write(record_fq1.format("fastq"))
+                    O_fq2[barcode_single].write(record_fq2.format("fastq"))
+                except KeyError:
                     O_unalign_fq1.write(record_fq1.format("fastq"))
                     O_unalign_fq2.write(record_fq2.format("fastq"))
-
+            else:
+                print("ERROR:null barcode type from sub function")
+                break
         except StopIteration:
             break
 
@@ -168,12 +200,13 @@ if __name__ == '__main__':
         O_fq1[k].close()
         O_fq2[k].close()
 
-    for (k, v) in d_count.items():
-        if k == "total":
-            logging.info("The total reads number: %d" % v)
-        elif k == "out_total":
-            logging.info("Total reads number with our out barcode: %d" % v)
-        else:
-            logging.info("%s: %d" % (k, v))
+    if class_sample.barcode_type == "pair":
+        for (k, v) in d_count.items():
+            if k == "total":
+                logging.info("The total reads number: %d" % v)
+            elif k == "out_total":
+                logging.info("Total reads number with our out barcode: %d" % v)
+            else:
+                logging.info("%s: %d" % (k, v))
 
     logging.info('End running')
