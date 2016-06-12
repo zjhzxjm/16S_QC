@@ -85,7 +85,7 @@ class Sample:
                 code = subprocess.call(['mkdir', '-p', work_dir + "/" + project + "/" + sample + "_" + data_type])
                 if code:
                     logging.error("Can't make filefoder: %s/%s/%s" % (work_dir, project, sample))
-                d_dir[barcode] = work_dir + "/" + project + "/" + sample
+                d_dir[barcode] = work_dir + "/" + project + "/" + sample + "_" + data_type
                 l_check_barcode_type.append(len(barcode.split("+")))
         if len(list(set(l_check_barcode_type))) == 1 and list(set(l_check_barcode_type))[0] == 2:
             barcode_type = "pair"
