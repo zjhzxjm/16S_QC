@@ -1,0 +1,39 @@
+"""
+Copy this snakefile to your raw data directory and modify the LIBRARY to your actual project.
+The raw data filename must be "{LIBRARY}.R1.fastq.gz and {LIBRARY}.R2.fastq.gz"
+"""
+LIBRARY = "H16A28P250-1"
+"""
+run the shell:
+snakemake -c "qsub {params.cluster}" --jn {params.job_name}{jobid} -j 50 -s Split_QC.snake -T
+"""
+import os
+
+SPLIT_FILES_NUM = 30
+LIB_TYPE = "hiseq"
+DATA_TYPE = "16S"
+SAM_BARCODE_INFO = "sam_barcode.all"
+QUA_MIN = 20
+
+if os.path.exists("logs") != True:
+    os.system("mkdir logs")
+
+localrules: all, report
+
+include_prefix = "/home/xujm/bin/.self/Fastq_manipulate"
+include:
+    include_prefix + "/workflow/config.py"
+include:
+    include_prefix + "/rules/split_barcode.rules"
+include:
+    include_prefix + "/rules/pandaseq.rules"
+include:
+    include_prefix + "/rules/fastqfilter.rules"
+include:
+    include_prefix + "/rules/report.rules"
+include:
+    include_prefix + "/rules/fastqc.rules"
+
+rule all:
+    input:
+        LIBRARY + ".report.html"
