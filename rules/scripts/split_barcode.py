@@ -106,8 +106,6 @@ if __name__ == '__main__':
         )
     logging.info("Start running")
 
-
-
     class_sample = Sample(args.sample_config, work_path)
     out_barcode = setting.SeqIndex.out_barcode['hiseq']
 
