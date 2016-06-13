@@ -26,25 +26,31 @@ parser.add_argument('-v', '--verbose', action='store_true', dest='verbose', help
 
 
 class RawFastqPairInfo:
-    def __init__(self, ob_read1, ob_read2, outbarcode, barcode_type='realgene'):
+    def __init__(self, ob_read1, ob_read2, outbarcode, lib_type):
         self.ob_read1 = ob_read1
         self.ob_read2 = ob_read2
         self.out_barcode = outbarcode
-        self.barcode_type = barcode_type
+        self.lib_type = lib_type
 
     def get_barcode_pair(self):
         fq1_seq = str(self.ob_read1.seq)
         fq2_seq = str(self.ob_read2.seq)
-        fq1_bar = fq1_seq[:6]
-        fq2_bar = fq2_seq[:6]
+        if self.lib_type == "hiseq":
+            fq1_bar = fq1_seq[:6]
+            fq2_bar = fq2_seq[:6]
+        elif self.lib_type == "miseq":
+            fq1_bar = fq2_seq[:6]
+            fq2_bar = fq1_seq[:6]
+        else:
+            logging.critical('barcode {0} not exists'.format(self.lib_type))
 
         try:
-            f_barcode = "F" + str(setting.SeqIndex.barcode[self.barcode_type].index(fq1_bar) + 1)
+            f_barcode = "F" + str(setting.SeqIndex.barcode[self.lib_type].index(fq1_bar) + 1)
         except ValueError:
             f_barcode = ''
 
         try:
-            r_barcode = "R" + str(setting.SeqIndex.barcode[self.barcode_type].index(fq2_bar) + 1)
+            r_barcode = "R" + str(setting.SeqIndex.barcode[self.lib_type].index(fq2_bar) + 1)
         except ValueError:
             r_barcode = ''
 
@@ -66,27 +72,30 @@ class RawFastqPairInfo:
 
 
 class RawFastqSingleInfo:
-    def __init__(self, ob_read1):
-        self.ob_read1 = ob_read1
+    def __init__(self, ob_read):
+        self.ob_read = ob_read
 
     def get_barcode(self):
-        fq1_seq = str(self.ob_read1.seq)
-        fq1_bar = fq1_seq[:6]
-        return fq1_bar
+        fq_seq = str(self.ob_read.seq)
+        fq_bar = fq_seq[:12]
+        return fq_bar
 
 
 class Sample:
     def __init__(self, sam_barcode, work_dir='.'):
         d_dir = {}
         l_check_barcode_type = []
+        l_lib_type = []
         with open(sam_barcode) as f:
             for line in f:
-                (project, sample, barcode, data_type) = line.strip().split()[:4]
+                (project, sample, barcode, data_type, lib_type) = line.strip().split()[:5]
                 code = subprocess.call(['mkdir', '-p', work_dir + "/" + project + "/" + sample + "_" + data_type])
                 if code:
                     logging.error("Can't make filefoder: %s/%s/%s" % (work_dir, project, sample))
                 d_dir[barcode] = work_dir + "/" + project + "/" + sample + "_" + data_type
                 l_check_barcode_type.append(len(barcode.split("+")))
+                l_lib_type.append(lib_type)
+
         if len(list(set(l_check_barcode_type))) == 1 and list(set(l_check_barcode_type))[0] == 2:
             barcode_type = "pair"
         elif len(list(set(l_check_barcode_type))) == 1 and list(set(l_check_barcode_type))[0] == 1:
@@ -94,6 +103,11 @@ class Sample:
         else:
             print("ERROR:illegal barcode in sam_barcode.all")
         logging.debug(d_dir)
+
+        if len(set(l_lib_type)) == 1:
+            self.lib_type = l_lib_type[0]
+        else:
+            logging.critical('More than 1 lib_type {0}'.format(l_lib_type))
         subprocess.call(['mkdir', '-p', work_dir + '/Unalign'])
         self.d_dir = d_dir
         self.barcode_type = barcode_type
@@ -154,7 +168,8 @@ if __name__ == '__main__':
             record_fq1 = next(fq1_iter)
             record_fq2 = next(fq2_iter)
             if class_sample.barcode_type == "pair":
-                class_fastq_pair = RawFastqPairInfo(record_fq1, record_fq2, out_barcode)
+                logging.debug("Pair run lib_type {0}".format(class_sample.lib_type))
+                class_fastq_pair = RawFastqPairInfo(record_fq1, record_fq2, out_barcode, class_sample.lib_type)
 
                 d_count['total'] += 1
                 if class_fastq_pair.is_need_out_barcode():
@@ -182,7 +197,8 @@ if __name__ == '__main__':
                         O_unalign_fq1.write(record_fq1.format("fastq"))
                         O_unalign_fq2.write(record_fq2.format("fastq"))
             elif class_sample.barcode_type == "single":
-                class_fastq_single = RawFastqSingleInfo(record_fq1)
+                logging.debug("Pair run lib_type {0}".format(class_sample.lib_type))
+                class_fastq_single = RawFastqSingleInfo(record_fq2)
                 barcode_single = class_fastq_single.get_barcode()
                 try:
                     O_fq1[barcode_single].write(record_fq1.format("fastq"))
@@ -191,7 +207,7 @@ if __name__ == '__main__':
                     O_unalign_fq1.write(record_fq1.format("fastq"))
                     O_unalign_fq2.write(record_fq2.format("fastq"))
             else:
-                print("ERROR:null barcode type from sub function")
+                logging.error("Null barcode type from sub function")
                 break
         except StopIteration:
             break

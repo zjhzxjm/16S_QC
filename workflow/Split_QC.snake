@@ -9,13 +9,24 @@ export PATH=/home/xujm/soft/Anaconda/anaconda3/bin:$PATH
 source activate snakemake
 snakemake -c "qsub {params.cluster}" --jn {params.job_name}{jobid} -j 50 -s Split_QC.snake -T
 """
+
 import os
 
 SPLIT_FILES_NUM = 50
-LIB_TYPE = "hiseq"
 """
-sam_barcode.all file format:
-contract sample barcode
+Primer setting:
+There are two built-in primers: hiseq and miseq, or you can set primer personality
+"""
+PRIMER_NAME = "hiseq"
+F_PRIMER = ""
+R_PRIMER = ""
+"""
+sam_barcode.all is space blank separated file, each line contains:
+1. contract
+2. sample
+3. barcode(eg: Built-in paired:F1+R1, Single on reverse(12bases): AGATTGACCAAC)
+4. data_type(16S,ITS,ARCH)
+5 .lib_type(hiseq,miseq)
 """
 SAM_BARCODE_INFO = "sam_barcode.all"
 QUA_MIN = 20

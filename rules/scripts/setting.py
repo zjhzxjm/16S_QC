@@ -30,12 +30,12 @@ class SeqIndex():
         },
         'miseq': {
             '16S': {
-                'forward': '',
-                'reverse': '',
+                'forward': 'GGACTACHVGGGTWTCTAAT',
+                'reverse': 'ACTCCTACGGGAGGCAGCAG',
             },
             'ITS': {
-                'forward': '',
-                'reverse': '',
+                'forward': 'TCCTCCGCTTATTGATATGC',
+                'reverse': 'GCATCGATGAAGAACGCAGC',
             },
             'ARCH': {
                 'forward': '',
@@ -45,7 +45,10 @@ class SeqIndex():
     }
 
     barcode = {
-        'realgene': ['ATCACG', 'CGATGT', 'TTAGGC', 'TGACCA', 'ACAGTG', 'GCCAAT', 'CAGATC', 'ACTTGA', 'GATCAG', 'TAGCTT',
-                     'GGCTAC', 'CTTGTA', 'AGTCAA', 'AGTTCC', 'ATGTCA', 'CCGTCC', 'GTAGAG', 'GTCCGC', 'GTGAAA', 'GTGGCC',
-                     'GTTTCG', 'CGTACG', 'GAGTGG', 'GGTAGC', 'ACTGAT', 'ATGAGC', 'ATTCCT', 'CAAAAG', 'CAACTA', 'CACCGG']
+        'hiseq': ['ATCACG', 'CGATGT', 'TTAGGC', 'TGACCA', 'ACAGTG', 'GCCAAT', 'CAGATC', 'ACTTGA', 'GATCAG', 'TAGCTT',
+                  'GGCTAC', 'CTTGTA', 'AGTCAA', 'AGTTCC', 'ATGTCA', 'CCGTCC', 'GTAGAG', 'GTCCGC', 'GTGAAA', 'GTGGCC',
+                  'GTTTCG', 'CGTACG', 'GAGTGG', 'GGTAGC', 'ACTGAT', 'ATGAGC', 'ATTCCT', 'CAAAAG', 'CAACTA', 'CACCGG'],
+        'miseq': ['CCTAAA', 'TGCAGA', 'CCATCA', 'GTGGTA', 'ACTTTA', 'GAGCAA', 'TGTTGC', 'ATGTCC', 'AGGTAC', 'GTTACG',
+                  'TACCGC', 'CGTAAG', 'ACAGCC', 'TGTCTC', 'GAGGAG', 'TACCGG', 'ATCTAG', 'CCAGGG', 'CACCTT', 'ATAGTT',
+                  'GCACTT', 'TTAACT', 'CGCGGT', 'GAGACT']
     }
