@@ -1,14 +1,16 @@
+def getdir(wildcards):
+    return ["QC/" + d + "/high_quality.fq" for d in DIRS if d.split("/")[0] == wildcards.contract]
+
 rule merge_samples:
     input:
-        expand("QC/{dir}/high_quality.fq", dir=DIRS)
+        getdir
     params:
-        prefix = "QC/{contract}",
         job_name = "MeSa",
         cluster = "-cwd -l vf=500M -e logs/ -o logs/"
     output:
         "QC/{contract}/{contract}.clean.fq"
     shell:
-        "cat {params.prefix}/*/high_quality.fq > {output}"
+        "cat {input} > {output}"
 
 
 rule run_fastqc:
