@@ -67,6 +67,8 @@ class RawFastqPairInfo:
         if fuzzysearch.find_near_matches(self.out_barcode, self.ob_read1.description, 1, 0, 0, 1) \
                 and fuzzysearch.find_near_matches(self.out_barcode, self.ob_read2.description, 1, 0, 0, 1):
             return True
+        elif self.lib_type == "miseq":
+            return True
         else:
             return False
 

@@ -30,16 +30,16 @@ class SeqIndex():
         },
         'miseq': {
             '16S': {
-                'forward': 'GGACTACHVGGGTWTCTAAT',
-                'reverse': 'ACTCCTACGGGAGGCAGCAG',
+                'forward': 'GGACTACVVGGGTATCTAATC',
+                'reverse': 'CCTACGGGRSGCAGCAG',
             },
             'ITS': {
                 'forward': 'TCCTCCGCTTATTGATATGC',
                 'reverse': 'GCATCGATGAAGAACGCAGC',
             },
             'ARCH': {
-                'forward': '',
-                'reverse': '',
+                'forward': 'GGACTACVVGGGTATCTAATC',
+                'reverse': 'CCCTACGGGGYGCASCAG',
             },
         }
     }
