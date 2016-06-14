@@ -33,9 +33,9 @@ rule stat_pandaseq:
 
 rule report:
     input:
+        unalign_fq = "Split/Unalign/" + LIBRARY + ".R1.fastq",
         stat_files = expand("QC/{dir}/stat", dir = DIRS),
         T1 = expand("QC/{contract}/{contract}.clean_fastqc.html", contract=CONTRACTS),
-        unalign_fq = "Split/Unalign/" + LIBRARY + ".R1.fastq"
     output:
         LIBRARY + ".report.html"
     run:

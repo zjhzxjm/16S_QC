@@ -9,12 +9,11 @@ import os, re, sys
 import argparse
 import logging
 from Bio import SeqIO
-from numpy import mean
 
 parser = argparse.ArgumentParser(description="")
 parser.add_argument('-i', '--input', type=str, dest='input', help='fastq file', required=True)
 parser.add_argument('-o', '--output', type=str, dest='output', help='filtered fastq out', required=True)
-parser.add_argument('-q', '--qmin', type=int, dest='qmin', help='min quality score, default is 20')
+parser.add_argument('-b', '--bases', type=int, dest='bases', help='the number of bases, default is 50')
 parser.add_argument('-v', '--verbose', action='store_true', dest='verbose', help='Enable debug info')
 
 if __name__ == '__main__':
@@ -36,24 +35,12 @@ if __name__ == '__main__':
     args = parser.parse_args()
     fq = args.input
     out = args.output
-    if args.qmin:
-        qmin = args.qmin
+    if args.bases:
+        bases = args.bases
     else:
-        qmin = 20
+        bases = 50
 
-    sample_name = " " + out.split("/")[-2].split("_")[0]
     fq_iter = SeqIO.parse(open(fq), "fastq")
     O_fq = open(out, "w")
-    count = 0
-    while True:
-        try:
-            record = next(fq_iter)
-            logging.debug(type(mean(record.letter_annotations["phred_quality"])))
-            if qmin > mean(record.letter_annotations["phred_quality"]):
-                continue
-            count += 1
-            record.description += sample_name + "_" + str(count)
-            O_fq.write(record.format("fastq"))
-        except StopIteration:
-            break
-    O_fq.close()
+    trimmed_reads = (rec[:-bases] for rec in fq_iter)
+    SeqIO.write(trimmed_reads, out, "fastq")

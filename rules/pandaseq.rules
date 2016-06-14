@@ -17,7 +17,7 @@ rule run_pandaseq:
     log:
         "QC/{dir}/pandaseq.log"
     run:
-        data_type = wildcards.dir.split("/")[-1].split("_")[1]
+        data_type = wildcards.dir.split("/")[-1].split("_")[-1]
         if F_PRIMER and R_PRIMER:
             f_primer = F_PRIMER
             r_primer = R_PRIMER
@@ -33,8 +33,7 @@ rule run_pandaseq:
             "-p " + f_primer,
             "-q " + r_primer,
             "-w {output}",
-            "-l 220",
-            "-L 500",
+            "-l 250",
             "-g {log}"])
             shell(PANDASEQ + " " + cmd)
         else:
