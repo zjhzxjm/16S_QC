@@ -1,8 +1,8 @@
-import subprocess
 from scripts.setting import SeqIndex
 import os
 
 
+PANDASEQ_VERSION = os.popen(PANDASEQ + " -v").read().strip()
 rule run_pandaseq:
     input:
         "Split/{dir}/" + LIBRARY + ".R1.fastq",
@@ -10,8 +10,9 @@ rule run_pandaseq:
     output:
         "QC/{dir}/pandaseq.fq"
     params:
-        job_name = "Pand",
-        cluster = "-cwd -l vf=1G -e logs/ -o logs/"
+        job_name = "Pand"
+    version:
+        PANDASEQ_VERSION
     threads:
         1
     log:

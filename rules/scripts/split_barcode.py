@@ -1,7 +1,7 @@
 """
 Author: xujm@realbio.cn
-Ver:
-
+Ver:1.0
+init
 """
 # -*- coding: utf-8 -*- \#
 import argparse
@@ -16,13 +16,14 @@ from Bio import SeqIO
 
 import setting
 
-parser = argparse.ArgumentParser(description="Split samples from Illumina sequencing")
+parser = argparse.ArgumentParser(description="Version:1.0 Split samples from Illumina sequencing")
 parser.add_argument('-a', '--fq1', type=str, dest='fq1', help='Read1 fastq file', required=True)
 parser.add_argument('-b', '--fq2', type=str, dest='fq2', help='Read2 fastq file', required=True)
 parser.add_argument('-s', '--sampleConfig', type=str, dest='sample_config', help='Sample barcode configuration info',
                     required=True)
-parser.add_argument('-w', '--workDir', type=str, dest='work_dir', help='work directory, default is ./')
+parser.add_argument('-w', '--workDir', type=str, dest='work_dir', default=".", help='work directory, default is ./')
 parser.add_argument('-v', '--verbose', action='store_true', dest='verbose', help='Enable debug info')
+parser.add_argument('--version', action='version', version='1.0')
 
 
 class RawFastqPairInfo:
@@ -119,14 +120,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
     fq1 = args.fq1
     fq2 = args.fq2
-
     fq1_name = fq1.split('/')[-1]
     fq2_name = fq2.split('/')[-1]
+    work_path = os.path.abspath(args.work_dir)
 
-    if args.work_dir:
-        work_path = os.path.abspath(args.work_dir)
-    else:
-        work_path = os.path.abspath(".")
     if args.verbose:
         logging.basicConfig(
             level=logging.DEBUG,

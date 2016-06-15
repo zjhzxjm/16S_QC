@@ -1,7 +1,10 @@
 """
 Author: xujm@realbio.cn
-Ver:
-
+Ver:1.1
+1。fix output relative path error
+2. remove info.log output
+Ver:1.0
+init
 """
 # -*- coding: utf-8 -*- \#
 
@@ -14,8 +17,9 @@ from numpy import mean
 parser = argparse.ArgumentParser(description="")
 parser.add_argument('-i', '--input', type=str, dest='input', help='fastq file', required=True)
 parser.add_argument('-o', '--output', type=str, dest='output', help='filtered fastq out', required=True)
-parser.add_argument('-q', '--qmin', type=int, dest='qmin', help='min quality score, default is 20')
+parser.add_argument('-q', '--qmin', type=int, dest='qmin', default=20, help='min quality score, default is 20')
 parser.add_argument('-v', '--verbose', action='store_true', dest='verbose', help='Enable debug info')
+parser.add_argument('--version', action='version', version='1.1')
 
 if __name__ == '__main__':
     args = parser.parse_args()
@@ -25,17 +29,11 @@ if __name__ == '__main__':
             format="[%(asctime)s]%(name)s:%(levelname)s:%(message)s",
             filename='debug.log'
         )
-    else:
-        logging.basicConfig(
-            level=logging.INFO,
-            format="[%(asctime)s]%(name)s:%(levelname)s:%(message)s",
-            filename='info.log'
-        )
 
 if __name__ == '__main__':
     args = parser.parse_args()
     fq = args.input
-    out = args.output
+    out = os.path.abspath(args.output)
     if args.qmin:
         qmin = args.qmin
     else:

@@ -1,25 +1,26 @@
 def getdir(wildcards):
     return ["QC/" + d + "/high_quality.fq" for d in DIRS if d.split("/")[0] == wildcards.contract]
 
-rule merge_samples:
-    input:
-        getdir
-    params:
-        job_name = "MeSa",
-        cluster = "-cwd -l vf=500M -e logs/ -o logs/"
-    output:
-        "QC/{contract}/{contract}.clean.fq"
-    shell:
-        "cat {input} > {output}"
-
-
+FASTQC_VERSION = os.popen("fastqc -v").read().strip()
 rule run_fastqc:
     input:
         "QC/{contract}/{contract}.clean.fq"
     params:
         job_name = "FaQc",
-        cluster = "-cwd -l vf=1G -e logs/ -o logs/"
     output:
         "QC/{contract}/{contract}.clean_fastqc.html"
+    version:
+        FASTQC_VERSION
     shell:
         ENV_BIN + "fastqc {input}"
+
+
+rule merge_samples:
+    input:
+        getdir
+    params:
+        job_name = "MeSa",
+    output:
+        "QC/{contract}/{contract}.clean.fq"
+    shell:
+        "cat {input} > {output}"

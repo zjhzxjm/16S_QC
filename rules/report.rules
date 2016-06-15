@@ -1,35 +1,6 @@
 from snakemake.utils import report
 import os
 
-rule stat_pandaseq:
-    input:
-        raw_data = "Split/{contract}/{sample}/" + LIBRARY + ".R1.fastq",
-        panda_data = "QC/{contract}/{sample}/pandaseq.fq",
-        clean_data = "QC/{contract}/{sample}/high_quality.fq"
-    params:
-        job_name = "StPa",
-        cluster = "-cwd -l vf=500M -e logs/ -o logs/"
-    output:
-        "QC/{contract}/{sample}/stat"
-    run:
-        wc_raw_data = int(os.popen("wc -l {0}".format(input.raw_data)).read().strip().split()[0])
-        wc_panda_data = int(os.popen("wc -l {0}".format(input.panda_data)).read().strip().split()[0])
-        wc_clean_data = int(os.popen("wc -l {0}".format(input.clean_data)).read().strip().split()[0])
-        stat_line = "{c:20s}  {s:15s}  {r_n:10d}  {p_n:10d}  {c_n:10d}  ".format(
-            c=wildcards.contract, s=wildcards.sample.split("_")[0], r_n=wc_raw_data//4, p_n=wc_panda_data//4, c_n=wc_clean_data//4)
-        if wc_raw_data != 0 and wc_panda_data != 0:
-            stat_line += "{c_p:9.2f}%  {t_p:9.2f}%\n".format(c_p=wc_clean_data/wc_panda_data*100,
-            t_p=wc_clean_data/wc_raw_data*100)
-        else:
-            stat_line += "{c_p:10d}  {t_p:10d}\n".format(c_p=0, t_p=0)
-        if wc_raw_data < wc_panda_data:
-            print(os.popen("wc -l {0}".format(input.raw_data)).read().strip())
-            print(wc_raw_data)
-            print(wc_raw_data//4)
-            print(stat_line)
-        O = open(output[0], "w")
-        O.write(stat_line)
-
 
 rule report:
     input:
@@ -78,3 +49,32 @@ rule report:
         ====================  ===============  ==========  ==========  ==========  ==========  ==========
 
         """, output[0], metadata="Author: Junming Xu (xujm@realbio.cn)", FastQC_Reports=input.T1)
+
+
+rule stat_sample:
+    input:
+        raw_data = "Split/{contract}/{sample}/" + LIBRARY + ".R1.fastq",
+        panda_data = "QC/{contract}/{sample}/pandaseq.fq",
+        clean_data = "QC/{contract}/{sample}/high_quality.fq"
+    params:
+        job_name = "StSa",
+    output:
+        "QC/{contract}/{sample}/stat"
+    run:
+        wc_raw_data = int(os.popen("wc -l {0}".format(input.raw_data)).read().strip().split()[0])
+        wc_panda_data = int(os.popen("wc -l {0}".format(input.panda_data)).read().strip().split()[0])
+        wc_clean_data = int(os.popen("wc -l {0}".format(input.clean_data)).read().strip().split()[0])
+        stat_line = "{c:20s}  {s:15s}  {r_n:10d}  {p_n:10d}  {c_n:10d}  ".format(
+            c=wildcards.contract, s=wildcards.sample.split("_")[0], r_n=wc_raw_data//4, p_n=wc_panda_data//4, c_n=wc_clean_data//4)
+        if wc_raw_data != 0 and wc_panda_data != 0:
+            stat_line += "{c_p:9.2f}%  {t_p:9.2f}%\n".format(c_p=wc_clean_data/wc_panda_data*100,
+            t_p=wc_clean_data/wc_raw_data*100)
+        else:
+            stat_line += "{c_p:10d}  {t_p:10d}\n".format(c_p=0, t_p=0)
+        if wc_raw_data < wc_panda_data:
+            print(os.popen("wc -l {0}".format(input.raw_data)).read().strip())
+            print(wc_raw_data)
+            print(wc_raw_data//4)
+            print(stat_line)
+        O = open(output[0], "w")
+        O.write(stat_line)

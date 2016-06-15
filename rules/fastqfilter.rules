@@ -2,6 +2,7 @@ from Bio import SeqIO
 from numpy import mean
 import os
 
+FASTQFILTER_VERSION = os.popen(ENV_BIN + "python " + SCRIPTS_BIN + "fastqfilter.py --version").read().strip()
 rule run_fastqfilter:
     """
     Filter by average quality score
@@ -12,8 +13,9 @@ rule run_fastqfilter:
         "QC/{dir}/high_quality.fq"
     params:
         qmin = QUA_MIN,
-        job_name = "FaFi",
-        cluster = "-cwd -l vf=1G -e logs/ -o logs/"
+        job_name = "FaFi"
+    version:
+        FASTQFILTER_VERSION
     shell:
         ENV_BIN + "python " + SCRIPTS_BIN + "fastqfilter.py"
          " -i {input}"
