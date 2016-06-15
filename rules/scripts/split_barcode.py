@@ -1,5 +1,7 @@
 """
 Author: xujm@realbio.cn
+Ver1.1
+1. info.log only report barcode pair
 Ver:1.0
 init
 """
@@ -16,14 +18,14 @@ from Bio import SeqIO
 
 import setting
 
-parser = argparse.ArgumentParser(description="Version:1.0 Split samples from Illumina sequencing")
+parser = argparse.ArgumentParser(description="Split samples from Illumina sequencing")
 parser.add_argument('-a', '--fq1', type=str, dest='fq1', help='Read1 fastq file', required=True)
 parser.add_argument('-b', '--fq2', type=str, dest='fq2', help='Read2 fastq file', required=True)
 parser.add_argument('-s', '--sampleConfig', type=str, dest='sample_config', help='Sample barcode configuration info',
                     required=True)
 parser.add_argument('-w', '--workDir', type=str, dest='work_dir', default=".", help='work directory, default is ./')
 parser.add_argument('-v', '--verbose', action='store_true', dest='verbose', help='Enable debug info')
-parser.add_argument('--version', action='version', version='1.0')
+parser.add_argument('--version', action='version', version='1.1')
 
 
 class RawFastqPairInfo:
@@ -118,8 +120,8 @@ class Sample:
 
 if __name__ == '__main__':
     args = parser.parse_args()
-    fq1 = args.fq1
-    fq2 = args.fq2
+    fq1 = os.path.abspath(args.fq1)
+    fq2 = os.path.abspath(args.fq2)
     fq1_name = fq1.split('/')[-1]
     fq2_name = fq2.split('/')[-1]
     work_path = os.path.abspath(args.work_dir)
@@ -136,17 +138,17 @@ if __name__ == '__main__':
             format="[%(asctime)s]%(name)s:%(levelname)s:%(message)s",
             filename=work_path + "/" + fq1_name.replace("R1.", "") + ".info.log"
         )
-    logging.info("Start running")
+    logging.debug("Start running")
 
     class_sample = Sample(args.sample_config, work_path)
     out_barcode = setting.SeqIndex.out_barcode['realgene']
 
     if re.findall(r'gz', fq1):
-        F_fq1 = gzip.open(fq1)
+        F_fq1 = gzip.open(fq1, "r")
     else:
         F_fq1 = open(fq1)
     if re.findall(r'gz', fq2):
-        F_fq2 = gzip.open(fq2)
+        F_fq2 = gzip.open(fq2, "r")
     else:
         F_fq2 = open(fq2)
 
@@ -181,10 +183,10 @@ if __name__ == '__main__':
                             O_fq1[barcode_pair].write(record_fq1.format("fastq"))
                             O_fq2[barcode_pair].write(record_fq2.format("fastq"))
                             logging.debug(record_fq1.format("fastq"))
-                            try:
-                                d_count[class_sample.d_dir[barcode_pair]] += 1
-                            except KeyError:
-                                d_count[class_sample.d_dir[barcode_pair]] = 1
+                            # try:
+                            #     d_count[class_sample.d_dir[barcode_pair]] += 1
+                            # except KeyError:
+                            #     d_count[class_sample.d_dir[barcode_pair]] = 1
                         except KeyError:
                             O_unalign_fq1.write(record_fq1.format("fastq"))
                             O_unalign_fq2.write(record_fq2.format("fastq"))
@@ -218,10 +220,10 @@ if __name__ == '__main__':
     if class_sample.barcode_type == "pair":
         for (k, v) in d_count.items():
             if k == "total":
-                logging.info("The total reads number: %d" % v)
+                logging.debug("The total reads number: %d" % v)
             elif k == "out_total":
-                logging.info("Total reads number with our out barcode: %d" % v)
+                logging.debug("Total reads number with our out barcode: %d" % v)
             else:
                 logging.info("%s: %d" % (k, v))
 
-    logging.info('End running')
+    logging.debug('End running')

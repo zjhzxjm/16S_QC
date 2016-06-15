@@ -34,10 +34,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     fq = args.input
     out = os.path.abspath(args.output)
-    if args.qmin:
-        qmin = args.qmin
-    else:
-        qmin = 20
+    qmin = args.qmin
 
     sample_name = " " + out.split("/")[-2].split("_")[0]
     fq_iter = SeqIO.parse(open(fq), "fastq")

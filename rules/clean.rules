@@ -1,5 +1,7 @@
 
 rule rm_split:
+    input:
+        LIBRARY + ".report.html"
     params:
         "split/"
     output:
