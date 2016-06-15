@@ -4,7 +4,6 @@ from subprocess import Popen, PIPE, STDOUT
 
 
 PANDASEQ_VERSION = Popen(PANDASEQ + " -v", shell=True, stderr=PIPE).stderr.read().strip().decode("utf-8")
-print(PANDASEQ_VERSION)
 rule run_pandaseq:
     input:
         "Split/{dir}/" + LIBRARY + ".R1.fastq",

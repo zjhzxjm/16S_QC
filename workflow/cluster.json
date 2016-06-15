@@ -1,0 +1,31 @@
+{
+  "__default__": {
+    "vf": "500M",
+    "err": "logs/",
+    "std": "logs/"
+  },
+  "split_fq": {
+
+  },
+  "split_barcode": {
+    "vf": "1G"
+  },
+  "merge_split": {
+
+  },
+  "run_pandaseq": {
+    "vf": "1G"
+  },
+  "run_fastqfilter": {
+    "vf": "1G"
+  },
+  "merge_samples": {
+
+  },
+  "run_fastqc": {
+    "vf": "1G"
+  },
+  "stat_sample": {
+
+  }
+}

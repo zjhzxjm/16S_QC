@@ -4,6 +4,7 @@ import os
 
 rule report:
     input:
+        info_log = expand("split/Split/" + LIBRARY + ".fastq.{suffix}.info.log", suffix = SUFFIX),
         unalign_fq = "Split/Unalign/" + LIBRARY + ".R1.fastq",
         stat_files = expand("QC/{dir}/stat", dir = DIRS),
         T1 = expand("QC/{contract}/{contract}.clean_fastqc.html", contract=CONTRACTS),
@@ -14,14 +15,28 @@ rule report:
         num_sample = len(SAMPLES)
         wc_unalign_fq = int(os.popen("wc -l {0}".format(input.unalign_fq)).read().strip().split()[0])
 
-        table = ""
+        d_unalign_pair = {}
+        pair_table = ""
+        for file in input.info_log:
+            with open(file) as F:
+                for line in F:
+                    try:
+                        d_unalign_pair[line.split(":")[-2]] += int(line.strip().split(":")[-1])
+                    except KeyError:
+                        d_unalign_pair[line.split(":")[-2]] = 1
+        l_unalign_pair = sorted(d_unalign_pair.items(), key=lambda d:d[1], reverse = True)
+        for (k, v) in l_unalign_pair[:10]:
+            pair_table += "{p:<20s} {n:<20d}\n".format(p=k, n=v)
+        pair_table.strip()
+
+        data_table = ""
         sum_raw = 0
         for file in input.stat_files:
             with open(file) as F:
                 for line in F:
                     sum_raw += int(line.split()[2])
-                    table += line
-        table = table.strip()
+                    data_table += line
+        data_table = data_table.strip()
         unalign_ratio = "{0:.2f}%".format(wc_unalign_fq/(wc_unalign_fq+sum_raw*4)*100)
         report("""
         {LIBRARY} Data QC Workflow Report
@@ -45,8 +60,19 @@ rule report:
         ====================  ===============  ==========  ==========  ==========  ==========  ==========
         Contract              Sample           Raw reads   Pand reads  HQ reads    HQ ratio    Total ratio
         ====================  ===============  ==========  ==========  ==========  ==========  ==========
-        {table}
+        {data_table}
         ====================  ===============  ==========  ==========  ==========  ==========  ==========
+
+        Unalign barcode pairs:
+        ----------------------
+
+        Top 10 summary table:
+
+        ==================== ====================
+        Barcode information  Number
+        ==================== ====================
+        {pair_table}
+        ==================== ====================
 
         """, output[0], metadata="Author: Junming Xu (xujm@realbio.cn)", FastQC_Reports=input.T1)
 

@@ -34,7 +34,7 @@ for s in iter_all_strings():
 
 rule merge_split:
     input:
-        expand("split/Split/split_barcode.{suffix}.done", suffix = SUFFIX)
+        expand("split/Split/" + LIBRARY + ".fastq.{suffix}.info.log", suffix = SUFFIX)
     params:
         prefix = "split/Split/{dir}/" + LIBRARY + ".{pair}.fastq",
         job_name = "MeSp",
@@ -52,7 +52,7 @@ rule split_barcode:
         read2 = "split/" + LIBRARY + ".R2.fastq.{suffix}",
         job_name = "SpBa",
     output:
-        touch("split/Split/split_barcode.{suffix}.done")
+        "split/Split/" + LIBRARY + ".fastq.{suffix}.info.log"
     version:
         SPLIT_BARCODE_VERSION
     shell:
