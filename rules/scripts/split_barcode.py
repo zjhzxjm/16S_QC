@@ -1,5 +1,7 @@
 """
 Author: xujm@realbio.cn
+Ver1.2
+1. According the seq description to judge out barcode exists or not
 Ver1.1
 1. info.log only report barcode pair
 Ver:1.0
@@ -25,7 +27,7 @@ parser.add_argument('-s', '--sampleConfig', type=str, dest='sample_config', help
                     required=True)
 parser.add_argument('-w', '--workDir', type=str, dest='work_dir', default=".", help='work directory, default is ./')
 parser.add_argument('-v', '--verbose', action='store_true', dest='verbose', help='Enable debug info')
-parser.add_argument('--version', action='version', version='1.1')
+parser.add_argument('--version', action='version', version='1.2')
 
 
 class RawFastqPairInfo:
@@ -67,13 +69,14 @@ class RawFastqPairInfo:
         Returns: True or False
 
         """
-        if fuzzysearch.find_near_matches(self.out_barcode, self.ob_read1.description, 1, 0, 0, 1) \
-                and fuzzysearch.find_near_matches(self.out_barcode, self.ob_read2.description, 1, 0, 0, 1):
+        try:
+            if fuzzysearch.find_near_matches(self.out_barcode, self.ob_read1.description, 1, 0, 0, 1) \
+                    and fuzzysearch.find_near_matches(self.out_barcode, self.ob_read2.description, 1, 0, 0, 1):
+                return True
+            else:
+                return False
+        except IndexError:
             return True
-        elif self.lib_type == "miseq":
-            return True
-        else:
-            return False
 
 
 class RawFastqSingleInfo:
