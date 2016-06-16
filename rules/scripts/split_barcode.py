@@ -2,6 +2,7 @@
 Author: xujm@realbio.cn
 Ver1.2
 1. According the seq description to judge out barcode exists or not
+2. fix gzip error on python 3.5
 Ver1.1
 1. info.log only report barcode pair
 Ver:1.0
@@ -70,11 +71,14 @@ class RawFastqPairInfo:
 
         """
         try:
-            if fuzzysearch.find_near_matches(self.out_barcode, self.ob_read1.description, 1, 0, 0, 1) \
-                    and fuzzysearch.find_near_matches(self.out_barcode, self.ob_read2.description, 1, 0, 0, 1):
-                return True
+            if re.match(r'[ATCG]', self.ob_read1.description.split()[1].split(":")[-1].strip()):
+                if fuzzysearch.find_near_matches(self.out_barcode, self.ob_read1.description, 1, 0, 0, 1) \
+                        and fuzzysearch.find_near_matches(self.out_barcode, self.ob_read2.description, 1, 0, 0, 1):
+                    return True
+                else:
+                    return False
             else:
-                return False
+                return True
         except IndexError:
             return True
 
@@ -110,7 +114,6 @@ class Sample:
             barcode_type = "single"
         else:
             print("ERROR:illegal barcode in sam_barcode.all")
-        logging.debug(d_dir)
 
         if len(set(l_lib_type)) == 1:
             self.lib_type = l_lib_type[0]
@@ -147,11 +150,11 @@ if __name__ == '__main__':
     out_barcode = setting.SeqIndex.out_barcode['realgene']
 
     if re.findall(r'gz', fq1):
-        F_fq1 = gzip.open(fq1, "r")
+        F_fq1 = gzip.open(fq1, "rt")
     else:
         F_fq1 = open(fq1)
     if re.findall(r'gz', fq2):
-        F_fq2 = gzip.open(fq2, "r")
+        F_fq2 = gzip.open(fq2, "rt")
     else:
         F_fq2 = open(fq2)
 
@@ -182,10 +185,10 @@ if __name__ == '__main__':
                     barcode_pair = class_fastq_pair.get_barcode_pair()
                     if barcode_pair:
                         try:
-                            logging.debug("Our seq %s" % class_sample.d_dir[barcode_pair])
+                            # logging.debug("Our seq %s" % class_sample.d_dir[barcode_pair])
                             O_fq1[barcode_pair].write(record_fq1.format("fastq"))
                             O_fq2[barcode_pair].write(record_fq2.format("fastq"))
-                            logging.debug(record_fq1.format("fastq"))
+                            # logging.debug(record_fq1.format("fastq"))
                             # try:
                             #     d_count[class_sample.d_dir[barcode_pair]] += 1
                             # except KeyError:
