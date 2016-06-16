@@ -4,10 +4,11 @@ import os
 
 rule report:
     input:
-        info_log = expand("split/Split/" + LIBRARY + ".fastq.{suffix}.info.log", suffix = SUFFIX),
         unalign_fq = "Split/Unalign/" + LIBRARY + ".R1.fastq",
         stat_files = expand("QC/{dir}/stat", dir = DIRS),
         T1 = expand("QC/{contract}/{contract}.clean_fastqc.html", contract=CONTRACTS),
+    params:
+        info_log = expand("split/Split/" + LIBRARY + ".fastq.{suffix}.info.log", suffix = SUFFIX),
     output:
         LIBRARY + ".report.html"
     run:
@@ -17,7 +18,7 @@ rule report:
 
         d_unalign_pair = {}
         pair_table = ""
-        for file in input.info_log:
+        for file in params.info_log:
             with open(file) as F:
                 for line in F:
                     try:
