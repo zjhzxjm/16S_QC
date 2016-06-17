@@ -25,12 +25,6 @@ if __name__ == '__main__':
             format="[%(asctime)s]%(name)s:%(levelname)s:%(message)s",
             filename='debug.log'
         )
-    else:
-        logging.basicConfig(
-            level=logging.INFO,
-            format="[%(asctime)s]%(name)s:%(levelname)s:%(message)s",
-            filename='info.log'
-        )
 
 if __name__ == '__main__':
     args = parser.parse_args()
