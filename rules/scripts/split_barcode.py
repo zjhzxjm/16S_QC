@@ -1,5 +1,7 @@
 """
 Author: xujm@realbio.cn
+Ver1.3
+Add out barcode and barcode name params
 Ver1.2
 1. According the seq description to judge out barcode exists or not
 2. fix gzip error on python 3.5
@@ -24,39 +26,44 @@ import setting
 parser = argparse.ArgumentParser(description="Split samples from Illumina sequencing")
 parser.add_argument('-a', '--fq1', type=str, dest='fq1', help='Read1 fastq file', required=True)
 parser.add_argument('-b', '--fq2', type=str, dest='fq2', help='Read2 fastq file', required=True)
+parser.add_argument('-n', '--barcodeName', type=str, dest='barcode_name', default="hiseq", help='Barcode name, \
+                    the option for built-in: miseq and hiseq, default is hiseq. It will not affect when provide single \
+                    barcode seq.')
 parser.add_argument('-s', '--sampleConfig', type=str, dest='sample_config', help='Sample barcode configuration info',
                     required=True)
-parser.add_argument('-w', '--workDir', type=str, dest='work_dir', default=".", help='work directory, default is ./')
+parser.add_argument('-o', '--outBarcode', type=str, dest='out_barcode', help='Default is built-in \
+                    realgene seq')
+parser.add_argument('-w', '--workDir', type=str, dest='work_dir', default=".", help='Work directory, default is ./')
 parser.add_argument('-v', '--verbose', action='store_true', dest='verbose', help='Enable debug info')
-parser.add_argument('--version', action='version', version='1.2')
+parser.add_argument('--version', action='version', version='1.3')
 
 
 class RawFastqPairInfo:
-    def __init__(self, ob_read1, ob_read2, outbarcode, lib_type):
+    def __init__(self, ob_read1, ob_read2, outbarcode, barcode_name):
         self.ob_read1 = ob_read1
         self.ob_read2 = ob_read2
         self.out_barcode = outbarcode
-        self.lib_type = lib_type
+        self.barcode_name = barcode_name
 
     def get_barcode_pair(self):
         fq1_seq = str(self.ob_read1.seq)
         fq2_seq = str(self.ob_read2.seq)
-        if self.lib_type == "hiseq":
+        if self.barcode_name == "hiseq":
             fq1_bar = fq1_seq[:6]
             fq2_bar = fq2_seq[:6]
-        elif self.lib_type == "miseq":
+        elif self.barcode_name == "miseq":
             fq1_bar = fq2_seq[:6]
             fq2_bar = fq1_seq[:6]
         else:
-            logging.critical('barcode {0} not exists'.format(self.lib_type))
+            logging.critical('barcode {0} not exists'.format(self.barcode_name))
 
         try:
-            f_barcode = "F" + str(setting.SeqIndex.barcode[self.lib_type].index(fq1_bar) + 1)
+            f_barcode = "F" + str(setting.SeqIndex.barcode[self.barcode_name].index(fq1_bar) + 1)
         except ValueError:
             f_barcode = ''
 
         try:
-            r_barcode = "R" + str(setting.SeqIndex.barcode[self.lib_type].index(fq2_bar) + 1)
+            r_barcode = "R" + str(setting.SeqIndex.barcode[self.barcode_name].index(fq2_bar) + 1)
         except ValueError:
             r_barcode = ''
 
@@ -97,7 +104,6 @@ class Sample:
     def __init__(self, sam_barcode, work_dir='.'):
         d_dir = {}
         l_check_barcode_type = []
-        l_lib_type = []
         with open(sam_barcode) as f:
             for line in f:
                 (project, sample, barcode, data_type, lib_type) = line.strip().split()[:5]
@@ -106,7 +112,6 @@ class Sample:
                     logging.error("Can't make filefoder: %s/%s/%s" % (work_dir, project, sample))
                 d_dir[barcode] = work_dir + "/" + project + "/" + sample + "_" + data_type
                 l_check_barcode_type.append(len(barcode.split("+")))
-                l_lib_type.append(lib_type)
 
         if len(list(set(l_check_barcode_type))) == 1 and list(set(l_check_barcode_type))[0] == 2:
             barcode_type = "pair"
@@ -115,10 +120,6 @@ class Sample:
         else:
             print("ERROR:illegal barcode in sam_barcode.all")
 
-        if len(set(l_lib_type)) == 1:
-            self.lib_type = l_lib_type[0]
-        else:
-            logging.critical('More than 1 lib_type {0}'.format(l_lib_type))
         subprocess.call(['mkdir', '-p', work_dir + '/Unalign'])
         self.d_dir = d_dir
         self.barcode_type = barcode_type
@@ -130,7 +131,12 @@ if __name__ == '__main__':
     fq2 = os.path.abspath(args.fq2)
     fq1_name = fq1.split('/')[-1]
     fq2_name = fq2.split('/')[-1]
+    barcode_name = args.barcode_name
     work_path = os.path.abspath(args.work_dir)
+    if args.out_barcode:
+        out_barcode = args.out_barcode
+    else:
+        out_barcode = setting.SeqIndex.out_barcode['realgene']
 
     if args.verbose:
         logging.basicConfig(
@@ -147,7 +153,7 @@ if __name__ == '__main__':
     logging.debug("Start running")
 
     class_sample = Sample(args.sample_config, work_path)
-    out_barcode = setting.SeqIndex.out_barcode['realgene']
+
 
     if re.findall(r'gz', fq1):
         F_fq1 = gzip.open(fq1, "rt")
@@ -175,8 +181,8 @@ if __name__ == '__main__':
             record_fq1 = next(fq1_iter)
             record_fq2 = next(fq2_iter)
             if class_sample.barcode_type == "pair":
-                logging.debug("Pair run lib_type {0}".format(class_sample.lib_type))
-                class_fastq_pair = RawFastqPairInfo(record_fq1, record_fq2, out_barcode, class_sample.lib_type)
+                # logging.debug("Pair run lib_type {0}".format(class_sample.lib_type))
+                class_fastq_pair = RawFastqPairInfo(record_fq1, record_fq2, out_barcode, barcode_name)
 
                 d_count['total'] += 1
                 if class_fastq_pair.is_need_out_barcode():
