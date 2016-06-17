@@ -20,12 +20,13 @@ rule run_pandaseq:
         "QC/{dir}/pandaseq.log"
     run:
         data_type = wildcards.dir.split("/")[-1].split("_")[-1]
+        prime_name = D_LIB_TYPE[wildcards.dir]
         if F_PRIMER and R_PRIMER:
             f_primer = F_PRIMER
             r_primer = R_PRIMER
         else:
-            f_primer = SeqIndex.primer[PRIMER_NAME][data_type]['forward']
-            r_primer = SeqIndex.primer[PRIMER_NAME][data_type]['reverse']
+            f_primer = SeqIndex.primer[prime_name][data_type]['forward']
+            r_primer = SeqIndex.primer[prime_name][data_type]['reverse']
         if os.stat(input[0]).st_size and os.stat(input[1]).st_size:
             cmd = " ".join(
             ["-T {threads}",

@@ -41,7 +41,13 @@ class SeqIndex():
                 'forward': 'GGACTACVVGGGTATCTAATC',
                 'reverse': 'CCCTACGGGGYGCASCAG',
             },
-        }
+        },
+        'slim': {
+            '16S': {
+                'forward': 'TARGCCAAWACCKTACCA',
+                'reverse': 'GAAACCTGGTTGATCCTG',
+            },
+        },
     }
 
     barcode = {

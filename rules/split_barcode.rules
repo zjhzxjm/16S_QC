@@ -9,13 +9,16 @@ CONTRACTS = []
 SAMPLES = []
 DIRS = []
 SUFFIX = []
-
+D_LIB_TYPE = {}
 
 with open(SAM_BARCODE_INFO) as in_handle:
     for line in in_handle:
+        line = line.strip()
+        dir = line.split()[0] + "/" + line.split()[1] + "_" + line.split()[3]
         CONTRACTS.append(line.split()[0])
         SAMPLES.append(line.split()[1])
-        DIRS.append(line.split()[0] + "/" + line.split()[1] + "_" + line.split()[3])
+        DIRS.append(dir)
+        D_LIB_TYPE[dir] = line.split()[4]
 CONTRACTS = list(set(CONTRACTS))
 
 def iter_all_strings():
@@ -52,6 +55,7 @@ rule split_barcode:
         read1 = "split/" + LIBRARY + ".R1.fastq.{suffix}",
         read2 = "split/" + LIBRARY + ".R2.fastq.{suffix}",
         job_name = "SpBa",
+        barcode_name = BARCODE_NAME
     output:
         "split/Split/" + LIBRARY + ".fastq.{suffix}.info.log"
     version:
@@ -60,6 +64,7 @@ rule split_barcode:
         ENV_BIN + "python " + SCRIPTS_BIN + "split_barcode.py"
         " -a {params.read1}"
         " -b {params.read2}"
+        " -n {params.barcode_name}"
         " -s {input[2]}"
         " -w split/Split"
 
