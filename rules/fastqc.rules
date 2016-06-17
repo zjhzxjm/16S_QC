@@ -1,7 +1,7 @@
 def getdir(wildcards):
     return ["QC/" + d + "/high_quality.fq" for d in DIRS if d.split("/")[0] == wildcards.contract]
 
-FASTQC_VERSION = os.popen("fastqc -v").read().strip()
+FASTQC_VERSION = os.popen(ENV_BIN + "fastqc -v").read().strip()
 rule run_fastqc:
     input:
         "QC/{contract}/{contract}.clean.fq"
