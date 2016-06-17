@@ -4,6 +4,7 @@ from string import ascii_lowercase
 import itertools
 import os
 import math
+import re
 
 CONTRACTS = []
 SAMPLES = []
@@ -47,10 +48,18 @@ rule merge_split:
         "cat {params.prefix}.* > {output}"
 
 
+def get_split_fq_done(wildcards):
+    if os.path.exists(LIBRARY + '.R1.fastq.gz') and os.path.exists(LIBRARY + '.R2.fastq.gz'):
+        return ['split/split_fq.R1.fastq.gz.done', 'split/split_fq.R2.fastq.gz.done', 'sam_barcode.all']
+    elif os.path.exists(LIBRARY + '.R1.fastq') and os.path.exists(LIBRARY + '.R2.fastq'):
+        return ['split/split_fq.R1.fastq.done', 'split/split_fq.R2.fastq.done', 'sam_barcode.all']
+    else:
+        print("Error: illegal input files")
+
 SPLIT_BARCODE_VERSION = os.popen(ENV_BIN + "python " + SCRIPTS_BIN + "split_barcode.py --version").read().strip()
 rule split_barcode:
     input:
-         expand("split/split_fq.{pair}.done", pair = ["R1", "R2"]),"sam_barcode.all"
+         get_split_fq_done
     params:
         read1 = "split/" + LIBRARY + ".R1.fastq.{suffix}",
         read2 = "split/" + LIBRARY + ".R2.fastq.{suffix}",
@@ -71,14 +80,21 @@ rule split_barcode:
 
 rule split_fq:
     input:
-        LIBRARY + ".{pair}.fastq.gz"
+        LIBRARY + ".{pair}.fastq{file_type,.*}"
     params:
         prefix = "split/" + LIBRARY + ".{pair}.fastq.",
         split_files = SPLIT_FILES_NUM,
         job_name = "SpFq",
     output:
-        touch("split/split_fq.{pair}.done"),
+        touch("split/split_fq.{pair}.fastq{file_type, .*}.done"),
     run:
-        wc_out = os.popen("gzip -dc %s | wc -l" % (LIBRARY + ".R1.fastq.gz")).read().strip()
-        split_lines = math.ceil(int(wc_out)//4/params.split_files)*4
-        shell("gzip -dc {input} | split -l {split_lines} - {params.prefix}")
+        if wildcards.file_type == '.gz':
+            wc_out = os.popen("gzip -dc {0} | wc -l".format(input)).read().strip()
+            split_lines = math.ceil(int(wc_out)//4/params.split_files)*4
+            shell("gzip -dc {input} | split -l {split_lines} - {params.prefix}")
+        elif wildcards.file_type == '':
+            wc_out = os.popen("wc -l {0}".format(input)).read().split()[0].strip()
+            print(wc_out)
+            split_lines = math.ceil(int(wc_out)//4/params.split_files)*4
+            shell("split -l {split_lines} {input} {params.prefix}")
+

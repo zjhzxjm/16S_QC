@@ -14,7 +14,7 @@ rule report:
     run:
         num_contract = len(CONTRACTS)
         num_sample = len(SAMPLES)
-        wc_unalign_fq = int(os.popen("wc -l {0}".format(input.unalign_fq)).read().strip().split()[0])
+        wc_unalign_fq = int(os.popen("wc -l {0}".format(input.unalign_fq)).read().split()[0].strip())
 
         d_unalign_pair = {}
         pair_table = ""
