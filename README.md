@@ -1,6 +1,7 @@
 # 16S_QC
 
 Copy snakefile and cluster.json to your raw data directory. Modify the LIBRARY, BARCODE_NAME to your project.
+
 The raw data filename must be "{LIBRARY}.R1.fastq.gz and {LIBRARY}.R2.fastq.gz"
 
 LIBRARY = "H16A28P250-1"
