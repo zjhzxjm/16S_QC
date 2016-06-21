@@ -30,8 +30,6 @@ if __name__ == '__main__':
             filename='debug.log'
         )
 
-if __name__ == '__main__':
-    args = parser.parse_args()
     fq = args.input
     out = os.path.abspath(args.output)
     qmin = args.qmin
