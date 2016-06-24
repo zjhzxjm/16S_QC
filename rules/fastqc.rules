@@ -11,8 +11,11 @@ rule run_fastqc:
         "QC/{contract}/{contract}.clean_fastqc.html"
     version:
         FASTQC_VERSION
-    shell:
-        ENV_BIN + "fastqc {input}"
+    run:
+        if os.stat(input[0]).st_size:
+            shell(ENV_BIN + "fastqc {input}")
+        else:
+            shell("touch {output}")
 
 
 rule merge_samples:
