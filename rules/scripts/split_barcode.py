@@ -1,5 +1,8 @@
+# -*- coding: utf-8 -*-
 """
 Author: xujm@realbio.cn
+Ver1.4
+Because hiseq ITS not synthesis again so it should recognized by primer
 Ver1.3
 Add out barcode and barcode name params
 Ver1.2
@@ -10,7 +13,7 @@ Ver1.1
 Ver:1.0
 init
 """
-# -*- coding: utf-8 -*- \#
+
 import argparse
 import gzip
 import logging
@@ -35,15 +38,15 @@ parser.add_argument('-o', '--outBarcode', type=str, dest='out_barcode', help='De
                     realgene seq')
 parser.add_argument('-w', '--workDir', type=str, dest='work_dir', default=".", help='Work directory, default is ./')
 parser.add_argument('-v', '--verbose', action='store_true', dest='verbose', help='Enable debug info')
-parser.add_argument('--version', action='version', version='1.3')
+parser.add_argument('--version', action='version', version='1.4')
 
 
 class RawFastqPairInfo:
-    def __init__(self, ob_read1, ob_read2, outbarcode, barcode_name):
+    def __init__(self, ob_read1, ob_read2, outbarcode, barcodename):
         self.ob_read1 = ob_read1
         self.ob_read2 = ob_read2
         self.out_barcode = outbarcode
-        self.barcode_name = barcode_name
+        self.barcode_name = barcodename
 
     def get_barcode_pair(self):
         fq1_seq = str(self.ob_read1.seq)
@@ -51,19 +54,25 @@ class RawFastqPairInfo:
         if self.barcode_name == "hiseq":
             fq1_bar = fq1_seq[:6]
             fq2_bar = fq2_seq[:6]
+            barcode = self.barcode_name
+            if re.search('TCCTCCGCTTATTGATATGC', fq1_seq) and re.search('GCATCGATGAAGAACGCAGC', fq2_seq):
+                fq1_bar = fq2_seq[:6]
+                fq2_bar = fq1_seq[:6]
+                barcode = 'miseq'
         elif self.barcode_name == "miseq":
             fq1_bar = fq2_seq[:6]
             fq2_bar = fq1_seq[:6]
+            barcode = self.barcode_name
         else:
             logging.critical('barcode {0} not exists'.format(self.barcode_name))
 
         try:
-            f_barcode = "F" + str(setting.SeqIndex.barcode[self.barcode_name].index(fq1_bar) + 1)
+            f_barcode = "F" + str(setting.SeqIndex.barcode[barcode].index(fq1_bar) + 1)
         except ValueError:
             f_barcode = ''
 
         try:
-            r_barcode = "R" + str(setting.SeqIndex.barcode[self.barcode_name].index(fq2_bar) + 1)
+            r_barcode = "R" + str(setting.SeqIndex.barcode[barcode].index(fq2_bar) + 1)
         except ValueError:
             r_barcode = ''
 
@@ -153,7 +162,6 @@ if __name__ == '__main__':
     logging.debug("Start running")
 
     class_sample = Sample(args.sample_config, work_path)
-
 
     if re.findall(r'gz', fq1):
         F_fq1 = gzip.open(fq1, "rt")
