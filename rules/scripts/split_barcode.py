@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 Author: xujm@realbio.cn
+Ver1.5
+Support repeat barcode between ITS and 16S
 Ver1.4
 Because hiseq ITS not synthesis again so it should recognized by primer
 Ver1.3
@@ -38,7 +40,7 @@ parser.add_argument('-o', '--outBarcode', type=str, dest='out_barcode', help='De
                     realgene seq')
 parser.add_argument('-w', '--workDir', type=str, dest='work_dir', default=".", help='Work directory, default is ./')
 parser.add_argument('-v', '--verbose', action='store_true', dest='verbose', help='Enable debug info')
-parser.add_argument('--version', action='version', version='1.4')
+parser.add_argument('--version', action='version', version='1.5')
 
 
 class RawFastqPairInfo:
@@ -51,6 +53,7 @@ class RawFastqPairInfo:
     def get_barcode_pair(self):
         fq1_seq = str(self.ob_read1.seq)
         fq2_seq = str(self.ob_read2.seq)
+        data_type = ''
         if self.barcode_name == "hiseq":
             fq1_bar = fq1_seq[:6]
             fq2_bar = fq2_seq[:6]
@@ -59,6 +62,7 @@ class RawFastqPairInfo:
                 fq1_bar = fq2_seq[:6]
                 fq2_bar = fq1_seq[:6]
                 barcode = 'miseq'
+                data_type = 'ITS-'
         elif self.barcode_name == "miseq":
             fq1_bar = fq2_seq[:6]
             fq2_bar = fq1_seq[:6]
@@ -77,7 +81,7 @@ class RawFastqPairInfo:
             r_barcode = ''
 
         if f_barcode and r_barcode:
-            return f_barcode + "+" + r_barcode
+            return data_type + f_barcode + "+" + r_barcode
 
     def is_need_out_barcode(self):
         """
@@ -119,7 +123,10 @@ class Sample:
                 code = subprocess.call(['mkdir', '-p', work_dir + "/" + project + "/" + sample + "_" + data_type])
                 if code:
                     logging.error("Can't make filefoder: %s/%s/%s" % (work_dir, project, sample))
-                d_dir[barcode] = work_dir + "/" + project + "/" + sample + "_" + data_type
+                if data_type == 'ITS':
+                    d_dir['ITS-' + barcode] = work_dir + "/" + project + "/" + sample + "_" + data_type
+                else:
+                    d_dir[barcode] = work_dir + "/" + project + "/" + sample + "_" + data_type
                 l_check_barcode_type.append(len(barcode.split("+")))
 
         if len(list(set(l_check_barcode_type))) == 1 and list(set(l_check_barcode_type))[0] == 2:
