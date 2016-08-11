@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 Author: xujm@realbio.cn
+Ver1.6
+Add qibao AFLP data type
 Ver1.5
 Support repeat barcode between ITS and 16S
 Ver1.4
@@ -40,7 +42,7 @@ parser.add_argument('-o', '--outBarcode', type=str, dest='out_barcode', help='De
                     realgene seq')
 parser.add_argument('-w', '--workDir', type=str, dest='work_dir', default=".", help='Work directory, default is ./')
 parser.add_argument('-v', '--verbose', action='store_true', dest='verbose', help='Enable debug info')
-parser.add_argument('--version', action='version', version='1.5')
+parser.add_argument('--version', action='version', version='1.6')
 
 
 class RawFastqPairInfo:
@@ -58,11 +60,17 @@ class RawFastqPairInfo:
             fq1_bar = fq1_seq[:6]
             fq2_bar = fq2_seq[:6]
             barcode = self.barcode_name
-            if re.search('TCCTCCGCTTATTGATATGC', fq1_seq) and re.search('GCATCGATGAAGAACGCAGC', fq2_seq):
+            if re.search(its_primer1, fq1_seq) and re.search(its_primer2, fq2_seq):
                 fq1_bar = fq2_seq[:6]
                 fq2_bar = fq1_seq[:6]
                 barcode = 'miseq'
                 data_type = 'ITS-'
+            elif re.search(aflp_primer1, fq1_seq) and re.search(aflp_primer2, fq2_seq):
+                fq1_bar = fq1_seq[:6]
+                fq2_bar = fq2_seq[:6]
+                barcode = 'hiseq'
+                data_type = 'AFLP-'
+
         elif self.barcode_name == "miseq":
             fq1_bar = fq2_seq[:6]
             fq2_bar = fq1_seq[:6]
@@ -125,6 +133,8 @@ class Sample:
                     logging.error("Can't make filefoder: %s/%s/%s" % (work_dir, project, sample))
                 if data_type == 'ITS':
                     d_dir['ITS-' + barcode] = work_dir + "/" + project + "/" + sample + "_" + data_type
+                elif data_type == 'AFLP':
+                    d_dir['AFLP-' + barcode] = work_dir + "/" + project + "/" + sample + "_" + data_type
                 else:
                     d_dir[barcode] = work_dir + "/" + project + "/" + sample + "_" + data_type
                 l_check_barcode_type.append(len(barcode.split("+")))
@@ -149,6 +159,11 @@ if __name__ == '__main__':
     fq2_name = fq2.split('/')[-1]
     barcode_name = args.barcode_name
     work_path = os.path.abspath(args.work_dir)
+    its_primer1 = re.compile(r'TCCTCCGCTTATTGATATGC')
+    its_primer2 = re.compile(r'GCATCGATGAAGAACGCAGC')
+    aflp_primer1 = re.compile(r'GA[TC][GT][AG][GC][TG][CT][TA][AC][GC]AA[CT][GT][GC][TA]')
+    aflp_primer2 = re.compile(r'GA[TC][GT][AG][GC][TG][CT][TA][AC][GC]AA[CT][GT][GC][TA]')
+
     if args.out_barcode:
         out_barcode = args.out_barcode
     else:

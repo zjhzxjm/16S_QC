@@ -27,7 +27,7 @@ sam_barcode.all is space blank separated file, each line contains:
 1. contract
 2. sample
 3. barcode(eg: Built-in paired:F1+R1, Single on reverse(12bases): AGATTGACCAAC)
-4. data_type(16S, ITS, ARCH)
+4. data_type(16S, ITS, ARCH, AFLP)
 5. lib_type(hiseq, miseq, slim)
 """
 SAM_BARCODE_INFO = "sam_barcode.all"

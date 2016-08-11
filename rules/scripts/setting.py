@@ -27,6 +27,10 @@ class SeqIndex():
                 'forward': 'GGACTACVVGGGTATCTAATC',
                 'reverse': 'CCCTACGGGGYGCASCAG',
             },
+            'AFLP': {
+                'forward': 'GAYKRSKYWMSAAYKSW',
+                'reverse': 'GAYKRSKYWMSAAYKSW',
+            },
         },
         'miseq': {
             '16S': {
