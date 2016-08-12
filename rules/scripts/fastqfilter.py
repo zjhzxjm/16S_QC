@@ -1,5 +1,7 @@
 """
 Author: xujm@realbio.cn
+Ver:1.2
+Fastqfilter sample name error bug #9
 Ver:1.1
 1。fix output relative path error
 2. remove info.log output
@@ -34,7 +36,8 @@ if __name__ == '__main__':
     out = os.path.abspath(args.output)
     qmin = args.qmin
 
-    sample_name = " " + out.split("/")[-2].split("_")[0]
+    recover_sample_name = lambda x: x.replace('_AFLP', '').replace('_ITS', '').replace('_16S', '')
+    sample_name = " " + recover_sample_name(out.split("/")[-2])
     fq_iter = SeqIO.parse(open(fq), "fastq")
     O_fq = open(out, "w")
     count = 0
