@@ -21,23 +21,35 @@ rule run_pandaseq:
     run:
         data_type = wildcards.dir.split("/")[-1].split("_")[-1]
         prime_name = D_LIB_TYPE[wildcards.dir]
-        if F_PRIMER and R_PRIMER:
-            f_primer = F_PRIMER
-            r_primer = R_PRIMER
-        else:
-            f_primer = SeqIndex.primer[prime_name][data_type]['forward']
-            r_primer = SeqIndex.primer[prime_name][data_type]['reverse']
+
         if os.stat(input[0]).st_size and os.stat(input[1]).st_size:
-            cmd = " ".join(
-            ["-T {threads}",
-            "-F",
-            "-f {input[0]}",
-            "-r {input[1]}",
-            "-p " + f_primer,
-            "-q " + r_primer,
-            "-w {output}",
-            "-l 250",
-            "-g {log}"])
+            if F_PRIMER == "none" and R_PRIMER == "none":
+                cmd = " ".join(
+                ["-T {threads}",
+                "-F",
+                "-f {input[0]}",
+                "-r {input[1]}",
+                "-w {output}",
+                "-l 250",
+                "-g {log}"])
+            else:
+                if F_PRIMER and R_PRIMER:
+                    f_primer = F_PRIMER
+                    r_primer = R_PRIMER
+                else:
+                    f_primer = SeqIndex.primer[prime_name][data_type]['forward']
+                    r_primer = SeqIndex.primer[prime_name][data_type]['reverse']
+
+                cmd = " ".join(
+                ["-T {threads}",
+                "-F",
+                "-f {input[0]}",
+                "-r {input[1]}",
+                "-p " + f_primer,
+                "-q " + r_primer,
+                "-w {output}",
+                "-l 250",
+                "-g {log}"])
             shell(PANDASEQ + " " + cmd)
         else:
             shell("touch {output}")
