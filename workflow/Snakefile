@@ -1,35 +1,41 @@
-"""
-Copy this snakefile and cluster.json to your raw data directory. Modify the LIBRARY, BARCODE_NAME to your project.
-The raw data filename must be "{LIBRARY}.R1.fastq.gz and {LIBRARY}.R2.fastq.gz"
-"""
+#######################################################################################################################
+#Copy this snakefile and cluster.json to your raw data directory. Modify the LIBRARY, BARCODE_NAME to your project.   #
+#The raw data filename must be "{LIBRARY}.R1.fastq.gz and {LIBRARY}.R2.fastq.gz"                                      #
+#######################################################################################################################
 LIBRARY = "H16A28P250-1"
-"""
-run the shell:
-export PATH=/home/xujm/soft/Anaconda/anaconda3/bin:$PATH
-source activate snakemake
-snakemake -j 80 --cluster-config cluster.json -c "qsub -cwd -l vf={cluster.vf} -e {cluster.err} -o {cluster.std}" --jn {params.job_name}{jobid} -T
-"""
+########################################################################################################################
+#run the shell:
+#export PATH=/home/xujm/soft/Anaconda/anaconda3/bin:$PATH
+#source activate snakemake
+#snakemake -j 80 --cluster-config cluster.json -c "qsub -cwd -l vf={cluster.vf} -e {cluster.err} -o {cluster.std}" --jn {params.job_name}{jobid} -T
+########################################################################################################################
+
 import os
 SPLIT_FILES_NUM = 50
-"""
-Barcode setting:
-There are two built-in barcode: hiseq and miseq, or you can provide 12 bases single barcode in sam_barcode.all file
-"""
+
+########################################################################################################################
+#Barcode setting:
+#There are two built-in barcode: hiseq and miseq, or you can provide 12 bases single barcode in sam_barcode.all file
+#Fuzzy search allow 1 dist (indel or mismatch)
+########################################################################################################################
 BARCODE_NAME = "hiseq"
-"""
-Primer setting:
-There are two built-in primers: hiseq and miseq, or you can set primer personality
-"""
+FUZZY_SEARCH = False
+
+########################################################################################################################
+#Primer setting:
+#There are two built-in primers: hiseq and miseq, or you can set primer personality
+########################################################################################################################
 F_PRIMER = ""
 R_PRIMER = ""
-"""
-sam_barcode.all is space blank separated file, each line contains:
-1. contract
-2. sample
-3. barcode(eg: Built-in paired:F1+R1, Single on reverse(12bases): AGATTGACCAAC)
-4. data_type(16S, ITS, ARCH, AFLP)
-5. lib_type(hiseq, miseq, slim)
-"""
+
+########################################################################################################################
+#sam_barcode.all is space blank separated file, each line contains:
+#1. contract
+#2. sample
+#3. barcode(eg: Built-in paired:F1+R1, Single on reverse(12bases): AGATTGACCAAC)
+#4. data_type(16S, ITS, ARCH, AFLP)
+#5. lib_type(hiseq, miseq, slim)
+########################################################################################################################
 SAM_BARCODE_INFO = "sam_barcode.all"
 QUA_MIN = 20
 

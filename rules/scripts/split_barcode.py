@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 Author: xujm@realbio.cn
+Ver1.7
+Support fuzzy search for barcode
 Ver1.6
 Add qibao AFLP data type
 Ver1.5
@@ -36,36 +38,42 @@ parser.add_argument('-b', '--fq2', type=str, dest='fq2', help='Read2 fastq file'
 parser.add_argument('-n', '--barcodeName', type=str, dest='barcode_name', default="hiseq", help='Barcode name, \
                     the option for built-in: miseq and hiseq, default is hiseq. It will not affect when provide single \
                     barcode seq.')
+parser.add_argument('-f', '--fuzzySearch', action='store_true', dest='fuzzy_search', help='Enable fuzzy search for \
+                    inner barcode')
 parser.add_argument('-s', '--sampleConfig', type=str, dest='sample_config', help='Sample barcode configuration info',
                     required=True)
 parser.add_argument('-o', '--outBarcode', type=str, dest='out_barcode', help='Default is built-in \
                     realgene seq')
 parser.add_argument('-w', '--workDir', type=str, dest='work_dir', default=".", help='Work directory, default is ./')
 parser.add_argument('-v', '--verbose', action='store_true', dest='verbose', help='Enable debug info')
-parser.add_argument('--version', action='version', version='1.6')
+parser.add_argument('--version', action='version', version='1.7')
 
 
 class RawFastqPairInfo:
-    def __init__(self, ob_read1, ob_read2, outbarcode, barcodename):
+    def __init__(self, ob_read1, ob_read2, outbarcode, barcodename, fuzzsearch=False):
         self.ob_read1 = ob_read1
         self.ob_read2 = ob_read2
         self.out_barcode = outbarcode
         self.barcode_name = barcodename
+        self.fuzzy_search = fuzzsearch
 
     def get_barcode_pair(self):
         fq1_seq = str(self.ob_read1.seq)
         fq2_seq = str(self.ob_read2.seq)
+
         data_type = ''
         if self.barcode_name == "hiseq":
             fq1_bar = fq1_seq[:6]
             fq2_bar = fq2_seq[:6]
             barcode = self.barcode_name
-            if re.search(its_primer1, fq1_seq) and re.search(its_primer2, fq2_seq):
+            if re.search(setting.SeqIndex.its_primer1_pattern, fq1_seq) and re.search(
+                    setting.SeqIndex.its_primer2_pattern, fq2_seq):
                 fq1_bar = fq2_seq[:6]
                 fq2_bar = fq1_seq[:6]
                 barcode = 'miseq'
                 data_type = 'ITS-'
-            elif re.search(aflp_primer1, fq1_seq) and re.search(aflp_primer2, fq2_seq):
+            elif re.search(setting.SeqIndex.aflp_primer1_pattern, fq1_seq) and re.search(
+                    setting.SeqIndex.aflp_primer2_pattern, fq2_seq):
                 fq1_bar = fq1_seq[:6]
                 fq2_bar = fq2_seq[:6]
                 barcode = 'hiseq'
@@ -81,15 +89,43 @@ class RawFastqPairInfo:
         try:
             f_barcode = "F" + str(setting.SeqIndex.barcode[barcode].index(fq1_bar) + 1)
         except ValueError:
-            f_barcode = ''
+            pos = self.fuzzy_search_barcode(barcode, fq1_bar)
+            if self.fuzzy_search and pos:
+                f_barcode = "F" + pos
+            else:
+                f_barcode = ''
 
         try:
             r_barcode = "R" + str(setting.SeqIndex.barcode[barcode].index(fq2_bar) + 1)
         except ValueError:
-            r_barcode = ''
+            pos = self.fuzzy_search_barcode(barcode, fq2_bar)
+            if self.fuzzy_search and pos:
+                r_barcode = "R" + pos
+            else:
+                r_barcode = ''
 
         if f_barcode and r_barcode:
             return data_type + f_barcode + "+" + r_barcode
+
+    def fuzzy_search_barcode(self, barcodes_name, inner_barcode):
+        """
+        Fuzzy search inner barcode in barcodes table, for sequencing company's problem
+        :param barcodes_name:
+        :param inner_barcode:
+        :return: the position of barcodes table
+        """
+        position = 0
+        flag = 0
+        tag = ''
+        while position < len(setting.SeqIndex.barcode[barcodes_name]):
+            if flag > 1:
+                tag = ''
+                break
+            if fuzzysearch.find_near_matches(setting.SeqIndex.barcode[barcodes_name][position], inner_barcode, 1, 1, 1, 1):
+                tag = str(position + 1)
+                flag += 1
+            position += 1
+        return tag
 
     def is_need_out_barcode(self):
         """
@@ -158,11 +194,11 @@ if __name__ == '__main__':
     fq1_name = fq1.split('/')[-1]
     fq2_name = fq2.split('/')[-1]
     barcode_name = args.barcode_name
+    if args.fuzzy_search:
+        fuzzy_search = True
+    else:
+        fuzzy_search = False
     work_path = os.path.abspath(args.work_dir)
-    its_primer1 = re.compile(r'TCCTCCGCTTATTGATATGC')
-    its_primer2 = re.compile(r'GCATCGATGAAGAACGCAGC')
-    aflp_primer1 = re.compile(r'GA[TC][GT][AG][GC][TG][CT][TA][AC][GC]AA[CT][GT][GC][TA]')
-    aflp_primer2 = re.compile(r'GA[TC][GT][AG][GC][TG][CT][TA][AC][GC]AA[CT][GT][GC][TA]')
 
     if args.out_barcode:
         out_barcode = args.out_barcode
@@ -212,7 +248,8 @@ if __name__ == '__main__':
             record_fq2 = next(fq2_iter)
             if class_sample.barcode_type == "pair":
                 # logging.debug("Pair run lib_type {0}".format(class_sample.lib_type))
-                class_fastq_pair = RawFastqPairInfo(record_fq1, record_fq2, out_barcode, barcode_name)
+                class_fastq_pair = RawFastqPairInfo(record_fq1, record_fq2, out_barcode, barcode_name,
+                                                    fuzzsearch=fuzzy_search)
 
                 d_count['total'] += 1
                 if class_fastq_pair.is_need_out_barcode():

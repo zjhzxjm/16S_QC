@@ -69,13 +69,22 @@ rule split_barcode:
         "split/Split/" + LIBRARY + ".fastq.{suffix}.info.log"
     version:
         SPLIT_BARCODE_VERSION
-    shell:
-        ENV_BIN + "python " + SCRIPTS_BIN + "split_barcode.py"
-        " -a {params.read1}"
-        " -b {params.read2}"
-        " -n {params.barcode_name}"
-        " -s {input[2]}"
-        " -w split/Split"
+    run:
+        if FUZZY_SEARCH:
+            shell(ENV_BIN + "python " + SCRIPTS_BIN + "split_barcode.py"
+            " -a {params.read1}"
+            " -b {params.read2}"
+            " -n {params.barcode_name}"
+            " -s {input[2]}"
+            " -w split/Split"
+            " -f")
+        else:
+            shell(ENV_BIN + "python " + SCRIPTS_BIN + "split_barcode.py"
+            " -a {params.read1}"
+            " -b {params.read2}"
+            " -n {params.barcode_name}"
+            " -s {input[2]}"
+            " -w split/Split")
 
 
 rule split_fq:
@@ -94,7 +103,6 @@ rule split_fq:
             shell("gzip -dc {input} | split -l {split_lines} - {params.prefix}")
         elif wildcards.file_type == '':
             wc_out = os.popen("wc -l {0}".format(input)).read().split()[0].strip()
-            print(wc_out)
             split_lines = math.ceil(int(wc_out)//4/params.split_files)*4
             shell("split -l {split_lines} {input} {params.prefix}")
 

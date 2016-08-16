@@ -3,9 +3,15 @@ Author: xujm@realbio.cn
 Ver:20160317
 
 """
+import re
 
 
 class SeqIndex():
+    its_primer1_pattern = re.compile(r'TCCTCCGCTTATTGATATGC')
+    its_primer2_pattern = re.compile(r'GCATCGATGAAGAACGCAGC')
+    aflp_primer1_pattern = re.compile(r'GA[TC][GT][AG][GC][TG][CT][TA][AC][GC]AA[CT][GT][GC][TA]')
+    aflp_primer2_pattern = re.compile(r'GA[TC][GT][AG][GC][TG][CT][TA][AC][GC]AA[CT][GT][GC][TA]')
+
     def __init__(self):
         pass
 
