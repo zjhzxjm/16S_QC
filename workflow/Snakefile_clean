@@ -1,0 +1,24 @@
+########################################################################################################################
+#run the shell:
+#export PATH=/home/xujm/soft/Anaconda/anaconda3/bin:$PATH
+#source activate snakemake
+#snakemake -s Snakefile_clean -j 12 -T
+########################################################################################################################
+REPORTS, = glob_wildcards("{file}.report.html")
+HIGH_QUALITY, = glob_wildcards("{file1}high_quality.fq")
+PANDASEQS, = glob_wildcards("{file2}pandaseq.fq")
+GZ_FASTQS, = glob_wildcards("{file3}.fastq")
+GZ_FQS, = glob_wildcards("{file4}.clean.fq")
+
+include_prefix = "/data_center_01/home/xujm/bin/.self/Pipeline_dev/16S_QC/"
+
+include:
+    include_prefix + "/rules/clean.rules"
+
+rule all:
+    input:
+        "rm_split.done",
+        expand("{file1}high_quality.fq.done", file1 = HIGH_QUALITY),
+        expand("{file2}pandaseq.fq.done", file2 = PANDASEQS),
+        expand("{file3}.fastq.done", file3 = GZ_FASTQS),
+        expand("{file4}.clean.fq.done", file4 = GZ_FQS)

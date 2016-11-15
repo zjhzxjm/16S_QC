@@ -1,11 +1,42 @@
 
 rule rm_split:
     input:
-        LIBRARY + ".report.html"
+        expand("{file}.report.html", file = REPORTS)
     params:
         "split/"
     output:
-        "rm_split.done"
+        touch("rm_split.done")
+    shell:
+        "rm -rf {params}"
 
-rule gzip_file:
+rule rm_high_quality:
     input:
+        "{file1}high_quality.fq"
+    output:
+        touch("{file1}high_quality.fq.done")
+    shell:
+        "rm -f {input}"
+
+rule rm_panda:
+    input:
+        "{file2}pandaseq.fq"
+    output:
+        touch("{file2}pandaseq.fq.done")
+    shell:
+        "rm -f {input}"
+
+rule gzip_Split:
+    input:
+        "{file3}.fastq"
+    output:
+        touch("{file3}.fastq.done")
+    shell:
+        "gzip {input}"
+
+rule gzip_QC:
+    input:
+        "{file4}.clean.fq"
+    output:
+        touch("{file4}.clean.fq.done")
+    shell:
+        "gzip {input}"
