@@ -37,6 +37,10 @@ class SeqIndex():
                 'forward': 'GAYKRSKYWMSAAYKSW',
                 'reverse': 'GAYKRSKYWMSAAYKSW',
             },
+            'nifH': {
+                'forward': 'TGCGAYCCSAARGCBGACTC',
+                'reverse': 'ATSGCCATCATYTCRCCGGA',
+            },
         },
         'miseq': {
             '16S': {

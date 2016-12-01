@@ -7,7 +7,7 @@ LIBRARY = "H16A28P250-1"
 #run the shell:
 #export PATH=/home/xujm/soft/Anaconda/anaconda3/bin:$PATH
 #source activate snakemake
-#snakemake -j 80 --cluster-config cluster.json -c "qsub -cwd -l vf={cluster.vf} -e {cluster.err} -o {cluster.std}" --jn {params.job_name}{jobid} -T
+#snakemake -j 80 --cluster-config cluster.json -c "qsub -cwd -l vf={cluster.vf} -e {cluster.err} -o {cluster.std} -q all.q,big.q" --jn {params.job_name}{jobid} -T
 ########################################################################################################################
 
 import os
@@ -33,7 +33,7 @@ R_PRIMER = ""
 #1. contract
 #2. sample
 #3. barcode(eg: Built-in paired:F1+R1, Single on reverse(12bases): AGATTGACCAAC)
-#4. data_type(16S, ITS, ARCH, AFLP)
+#4. data_type(16S, ITS, ARCH, AFLP, nifH)
 #5. lib_type(hiseq, miseq, slim)
 ########################################################################################################################
 SAM_BARCODE_INFO = "sam_barcode.all"
