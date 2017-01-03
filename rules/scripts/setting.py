@@ -11,6 +11,8 @@ class SeqIndex():
     its_primer2_pattern = re.compile(r'GCATCGATGAAGAACGCAGC')
     aflp_primer1_pattern = re.compile(r'GA[TC][GT][AG][GC][TG][CT][TA][AC][GC]AA[CT][GT][GC][TA]')
     aflp_primer2_pattern = re.compile(r'GA[TC][GT][AG][GC][TG][CT][TA][AC][GC]AA[CT][GT][GC][TA]')
+    nifh_primer1_pattern = re.compile(r'TGCGA[CT]CC[GC]AA[AG]GC[GTC]GACTC')
+    nifh_primer2_pattern = re.compile(r'AT[GC]GCCATCAT[CT]TC[AG]CCGGA')
 
     def __init__(self):
         pass

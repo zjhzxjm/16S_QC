@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 Author: xujm@realbio.cn
+Ver1.8
+add nifH data type
 Ver1.7
 Support fuzzy search for barcode
 Ver1.6
@@ -46,7 +48,7 @@ parser.add_argument('-o', '--outBarcode', type=str, dest='out_barcode', help='De
                     realgene seq')
 parser.add_argument('-w', '--workDir', type=str, dest='work_dir', default=".", help='Work directory, default is ./')
 parser.add_argument('-v', '--verbose', action='store_true', dest='verbose', help='Enable debug info')
-parser.add_argument('--version', action='version', version='1.7')
+parser.add_argument('--version', action='version', version='1.8')
 
 
 class RawFastqPairInfo:
@@ -78,6 +80,12 @@ class RawFastqPairInfo:
                 fq2_bar = fq2_seq[:6]
                 barcode = 'hiseq'
                 data_type = 'AFLP-'
+            elif re.search(setting.SeqIndex.nifh_primer1_pattern, fq1_seq) and re.search(
+                    setting.SeqIndex.nifh_primer2_pattern, fq2_seq):
+                fq1_bar = fq1_seq[:6]
+                fq2_bar = fq2_seq[:6]
+                barcode = 'hiseq'
+                data_type = 'nifH-'
 
         elif self.barcode_name == "miseq":
             fq1_bar = fq2_seq[:6]
@@ -171,6 +179,8 @@ class Sample:
                     d_dir['ITS-' + barcode] = work_dir + "/" + project + "/" + sample + "_" + data_type
                 elif data_type == 'AFLP':
                     d_dir['AFLP-' + barcode] = work_dir + "/" + project + "/" + sample + "_" + data_type
+                elif data_type == 'nifH':
+                    d_dir['nifH-' + barcode] = work_dir + "/" + project + "/" + sample + "_" + data_type
                 else:
                     d_dir[barcode] = work_dir + "/" + project + "/" + sample + "_" + data_type
                 l_check_barcode_type.append(len(barcode.split("+")))
